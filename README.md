@@ -2,7 +2,7 @@
 Project: Design Brief Orchestrator (n8n + OpenAI + Google + Freshdesk + Trello)
 This automation simulates how Deer Designer can receive, enrich, classify, and route design briefs submitted by clients through a Google Form — using AI + automation + memory to streamline messy real-world workflows.
 
-🛠 Tools Used
+## 🛠 **Tools Used**
 n8n: Visual automation orchestrator
 
 OpenAI (GPT-3.5-TURBO): To rewrite, extract insights, and classify briefs
