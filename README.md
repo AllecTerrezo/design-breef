@@ -15,7 +15,7 @@ Trello (via email): Task card creation
 
 SMTP (Gmail): Email notifications and Trello integration
 
-graph TD
+
     A[Google Form → Google Sheets Trigger]
     B[Memory Rows (historical log)]
     C[Merge Sheets Input]
@@ -51,21 +51,21 @@ task_type: Classified into categories (e.g., Social Post, Landing Page)
 
 It also receives past requests from the same client as memory context to improve accuracy and consistency.
 
-🔄 Modes: Test vs Production
+## 🔄 **Modes: Test vs Production**
 A toggle (Set node: mode = "test" or "production") controls execution:
 
 Test mode: Only runs AI processing
 
 Production mode: Sends emails, creates tickets/cards, logs history
 
-❌ Error Handling
+## ❌ **Error Handling**
 If GPT fails to return a valid response, the system:
 
 Skips routing
 
 Sends a detailed error alert email to the team
 
-🗂 Log Register
+## 🗂 **Log Register**
 Each processed request is logged in Google Sheets with:
 
 Timestamp
@@ -82,5 +82,5 @@ Suggested priority
 
 Suggested deadline
 
-✅ Summary
+## ✅ **Summary**
 This solution demonstrates a scalable, smart design brief orchestrator that integrates AI and automation to improve operational efficiency, enrich data, and notify teams, all using low-code tools with best practices in modular design, memory, error handling, and logic switching.
