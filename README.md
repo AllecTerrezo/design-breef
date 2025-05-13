@@ -1,4 +1,4 @@
-## Designer Brief – AI/Automation Architect
+## **Designer Brief – AI/Automation Architect**
 Project: Design Brief Orchestrator (n8n + OpenAI + Google + Freshdesk + Trello)
 This automation simulates how Deer Designer can receive, enrich, classify, and route design briefs submitted by clients through a Google Form — using AI + automation + memory to streamline messy real-world workflows.
 
@@ -36,7 +36,7 @@ graph TD
     H -- No --> I
     H -- Yes --> J --> K --> L --> M
 
-    🧠 GPT Prompt Features
+## 🧠 **GPT Prompt Features**
 The AI returns a structured JSON with:
 
 cleaned_description: Rewritten version of the client input
