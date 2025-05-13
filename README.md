@@ -1,4 +1,4 @@
-🦌 Deer Designer Test – AI/Automation Architect
+##**🦌 Deer Designer Test – AI/Automation Architect**
 Project: Design Brief Orchestrator (n8n + OpenAI + Google + Freshdesk + Trello)
 This automation simulates how Deer Designer can receive, enrich, classify, and route design briefs submitted by clients through a Google Form — using AI + automation + memory to streamline messy real-world workflows.
 
