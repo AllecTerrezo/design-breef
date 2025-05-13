@@ -1,0 +1,625 @@
+{
+  "name": "Design Deer Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80",
+          "mode": "list",
+          "cachedResultName": "Deer Designer - Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1082807569,
+          "mode": "list",
+          "cachedResultName": "Respostas ao formulário 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80/edit#gid=1082807569"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -460
+      ],
+      "id": "a8b7db7e-2429-4341-80c0-7a13a9b15bb4",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "jUAHb1uHEBKv5U7i",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a senior project analyst at a design agency. Your job is to help evaluate new client requests submitted through a form.\n\nBefore processing the new request, consider the client’s past project history to better understand their style, expectations, and recurring needs.\n\nRecent past requests from this client:\n{{$node[\"Filter Memory by Email\"].json[\"memory_summary\"]}}\n\nNow, analyze the new input below and return a JSON object that includes:\n1. A rewritten version of the project description, using professional language, clear structure, and filling in reasonable assumptions where appropriate.\n2. A list of clarifying questions or missing details that a designer would need to ask to fully understand the task (e.g. dimensions, platforms, references, expected output, etc.).\n3. A suggested priority level (Low / Medium / High / Very High) based on urgency, task complexity, and required effort. Take into account the client's suggested priority but adjust if needed.\n4. A suggested deadline, either confirming the client's deadline or adjusting it based on the estimated effort, level of detail, and time needed for quality work. Always return this in number of days from today (e.g. “3 business days”, “7 calendar days”, “confirm with client”, etc.).\n5. A classification of the task type. Use categories such as: \"Social Post\", \"Website UI\", \"Banner\", \"Presentation Deck\", \"Email Design\", \"Landing Page\", or \"Other\" if unclear.\n\nReturn only valid JSON in the following format:\n\n{\n  \"cleaned_description\": \"...\",\n  \"missing_info\": [\"...\", \"...\"],\n  \"suggested_priority\": \"...\",\n  \"suggested_deadline\": \"...\",\n  \"task_type\": \"...\"\n}\n\nClient Input:\n- Project description: {{$node[\"Google Sheets Trigger\"].json[\"Request Description\"]}}\n- Stated priority: {{$node[\"Google Sheets Trigger\"].json[\"Priority\"]}}\n- Stated deadline: {{$node[\"Google Sheets Trigger\"].json[\"Deadline\"]}}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        200,
+        -20
+      ],
+      "id": "eb171ad4-27b7-4ebb-b115-1a34c18871d8",
+      "name": "OpenAI",
+      "retryOnFail": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "Urbgffy8RLbJ6OHG",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "It retries 3 times in case of error."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "355bb30a-14e1-49d9-9d32-72ebb6b478c7",
+              "name": "cleaned_description",
+              "value": "={{ $json.message.content.cleaned_description }}",
+              "type": "string"
+            },
+            {
+              "id": "21ce1aa5-9ac3-4ea6-8fdc-2b847491b327",
+              "name": "missing_info",
+              "value": "={{ $json.message.content.missing_info.join(\"\").replace(/^\\[?\"?|\"?\\]?$/g, \"\") }}",
+              "type": "string"
+            },
+            {
+              "id": "4a81c6ae-e134-4883-9974-af5ac114c436",
+              "name": "suggested_priority",
+              "value": "={{ $json.message.content.suggested_priority }}",
+              "type": "string"
+            },
+            {
+              "id": "69d9f1ca-bf17-4fa5-a2c3-509cd4c5bc0f",
+              "name": "suggested_deadline",
+              "value": "={{ $json.message.content.suggested_deadline }}",
+              "type": "string"
+            },
+            {
+              "id": "7e7bdd27-1cc9-45be-aec6-6dbfd87881c5",
+              "name": "task_type",
+              "value": "={{ $json.message.content.task_type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        -260
+      ],
+      "id": "3ce187ad-2833-4d96-ada3-6f6a921176cd",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "requester": "email",
+        "requesterIdentificationValue": "={{ $('Google Sheets Trigger').first().json['E-mail'] }}",
+        "status": "open",
+        "priority": "={{ { \"Low\": \"Low\", \"Medium\": \"Medium\", \"High\": \"High\", \"Very High\": \"Urgent\" }[$json[\"suggested_priority\"]] }}",
+        "options": {
+          "description": "=Cleaned description: {{$json[\"cleaned_description\"]}}\n\nMissing Info: {{$json[\"missing_info\"]}}\n",
+          "subject": "={{$json[\"task_type\"]}} request from {{ $('Google Sheets Trigger').first().json.Name }}",
+          "tags": "={{$json[\"task_type\"]}}"
+        }
+      },
+      "type": "n8n-nodes-base.freshdesk",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        -260
+      ],
+      "id": "28ca2b84-d1ee-43e2-8950-5c25b7eca2d8",
+      "name": "Freshdesk",
+      "retryOnFail": true,
+      "credentials": {
+        "freshdeskApi": {
+          "id": "qV2s2jn73StTIhoX",
+          "name": "Freshdesk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "al2012.070.terrezo@gmail.com",
+        "toEmail": "rotaze.software@gmail.com",
+        "subject": "={{ $('Edit Fields').first().json.task_type }} Request From {{ $('Google Sheets Trigger').first().json.Name }} At  {{ $('Google Sheets Trigger').first().json['Carimbo de data/hora'] }}",
+        "html": "=<strong>Cleaned Description:</strong><br>\n{{ $('Edit Fields').first().json.cleaned_description }}<br><br>\n\n<strong>Missing Info:</strong><br>\n{{ $('Edit Fields').first().json.missing_info }}<br><br>\n\n<strong>Suggested Priority:</strong> {{ $('Edit Fields').first().json.suggested_priority }}<br>\n<strong>Suggested Deadline:</strong> \n{{ $('Edit Fields').first().json.suggested_deadline }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1580,
+        20
+      ],
+      "id": "f48b4715-e9c7-495a-a66e-521ff883c582",
+      "name": "Send Email To Team",
+      "webhookId": "87328a0e-c6db-44b6-b8df-646d410d5a1d",
+      "retryOnFail": true,
+      "credentials": {
+        "smtp": {
+          "id": "KcKdmmlahEg4wy8l",
+          "name": "SMTP account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fromEmail": "al2012.070.terrezo@gmail.com",
+        "toEmail": "allec3+xkxsfdumkhwb8rl3skgp@boards.trello.com",
+        "subject": "={{ $('Edit Fields').item.json.task_type }} Request From {{ $('Google Sheets Trigger').first().json.Name }} At  {{ $('Google Sheets Trigger').first().json['Carimbo de data/hora'] }}",
+        "html": "=<strong>Cleaned Description:</strong><br>\n{{ $('Edit Fields').item.json.cleaned_description }}<br><br>\n\n<strong>Missing Info:</strong><br>\n{{ $('Edit Fields').item.json.missing_info }}<br><br>\n\n<strong>Suggested Priority:</strong> {{ $('Edit Fields').item.json.suggested_priority }}<br>\n<strong>Suggested Deadline:</strong> \n{{ $('Edit Fields').item.json.suggested_deadline }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1300,
+        20
+      ],
+      "id": "7a94795e-1c11-4db3-8a81-7aa9c165b192",
+      "name": "Send Email To Trello",
+      "webhookId": "87328a0e-c6db-44b6-b8df-646d410d5a1d",
+      "retryOnFail": true,
+      "credentials": {
+        "smtp": {
+          "id": "KcKdmmlahEg4wy8l",
+          "name": "SMTP account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5724bc0f-fedd-4475-af35-fca556c81566",
+              "leftValue": "={{ !$json[\"text\"] }}",
+              "rightValue": "=true",
+              "operator": {
+                "type": "boolean",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        -20
+      ],
+      "id": "e917889c-d918-46d8-82b7-23a527799e24",
+      "name": "If OpenAI Return Answer"
+    },
+    {
+      "parameters": {
+        "fromEmail": "al2012.070.terrezo@gmail.com",
+        "toEmail": "=rotaze.software@gmail.com",
+        "subject": "=❗ OpenAI failed to return a response in the automation flow",
+        "html": "=<h3>⚠️ OpenAI failed to return a response</h3>\n\n<strong>Client Name:</strong> {{$node[\"Google Sheets Trigger\"].json[\"Name\"]}}<br>\n<strong>Client Email:</strong> {{$node[\"Google Sheets Trigger\"].json[\"E-mail\"]}}<br><br>\n\n<strong>Original Request:</strong><br>\n{{$node[\"Google Sheets Trigger\"].json[\"Request Description\"]}}<br><br>\n\n<strong>Error:</strong> The AI did not return a valid response. Please review the request and check the n8n logs.<br>\n<strong>Timestamp:</strong> {{$now}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        840,
+        240
+      ],
+      "id": "79638995-81ac-4bad-9725-378f759cdee8",
+      "name": "Alert Error To Team",
+      "webhookId": "87328a0e-c6db-44b6-b8df-646d410d5a1d",
+      "retryOnFail": true,
+      "credentials": {
+        "smtp": {
+          "id": "KcKdmmlahEg4wy8l",
+          "name": "SMTP account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2f17cc37-abdd-4b9d-8a0d-6750467b3429",
+              "leftValue": "={{ $vars.Mode_Switch }}",
+              "rightValue": "=Production",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1300,
+        -260
+      ],
+      "id": "38789de4-1f87-408f-9b4a-c2bbc466a05a",
+      "name": "Is Prod?"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80",
+          "mode": "list",
+          "cachedResultName": "Deer Designer - Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1277617769,
+          "mode": "list",
+          "cachedResultName": "Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80/edit#gid=1277617769"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{$now}}",
+            "Name": "={{$('Google Sheets Trigger').first().json.Name}}",
+            "Email": "={{ $('Google Sheets Trigger').first().json['E-mail'] }}",
+            "Cleaned Description": "={{ $('Edit Fields').first().json.cleaned_description }}",
+            "Missing Info": "={{ $('Edit Fields').first().json.missing_info }}",
+            "Task Type": "={{ $('Edit Fields').first().json.task_type }}",
+            "Priority": "={{ $('Edit Fields').first().json.suggested_priority }}",
+            "Deadline": "={{ $('Edit Fields').first().json.suggested_deadline }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cleaned Description",
+              "displayName": "Cleaned Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Missing Info",
+              "displayName": "Missing Info",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Task Type",
+              "displayName": "Task Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1880,
+        20
+      ],
+      "id": "9cb58147-db1d-406c-919e-ef73c12c5ec1",
+      "name": "Logs Register",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Z38JE50QKelHOy0q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80",
+          "mode": "list",
+          "cachedResultName": "Deer Designer - Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1277617769,
+          "mode": "list",
+          "cachedResultName": "Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-PgyAXxR5NhdeWoVtY-nsSqnI5KxtH6ITD-3CAMHI80/edit#gid=1277617769"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -20,
+        -260
+      ],
+      "id": "08cb0f75-6669-4241-b278-a45fe620996d",
+      "name": "Memory Rows",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Z38JE50QKelHOy0q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const emailToMatch = items[0].json[\"E-mail\"];\n\nconst memoryItems = items\n  .slice(1) // exclude the current trigger row\n  .filter(i => i.json[\"Email\"] === emailToMatch);\n\nconst lastThree = memoryItems\n  .slice(-3)\n  .map(entry => entry.json[\"Cleaned Description\"]);\n\nreturn [{\n  json: {\n    memory_summary: lastThree.length > 0\n      ? \"• \" + lastThree.join(\"\\n\\n• \")\n      : \"No previous requests from this user.\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        -300
+      ],
+      "id": "3d7b95d1-b3b6-4a55-b685-7456eb18f17d",
+      "name": "Filter Memory by Email"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        200,
+        -300
+      ],
+      "id": "92f9d936-d955-41ce-8f49-9d8bfee36573",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "If OpenAI Return Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Is Prod?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Freshdesk": {
+      "main": [
+        [
+          {
+            "node": "Send Email To Trello",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email To Trello": {
+      "main": [
+        [
+          {
+            "node": "Send Email To Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email To Team": {
+      "main": [
+        [
+          {
+            "node": "Logs Register",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If OpenAI Return Answer": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Error To Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Prod?": {
+      "main": [
+        [
+          {
+            "node": "Freshdesk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory Rows": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Filter Memory by Email": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Filter Memory by Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6a358fba-dee3-42a4-ba3a-4c1c619af7af",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "68fad82bdbb13141f8acd0e7b8c346d022e39612b117b56b188004789353aef5"
+  },
+  "id": "YsMS5etbftb3TDD2",
+  "tags": []
+}
